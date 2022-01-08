@@ -44,6 +44,26 @@ namespace AppDelBagno.Migrations
 
                     b.ToTable("Bagno");
                 });
+
+            modelBuilder.Entity("AppDelBagno.Models.Coda", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Utente")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("datetime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Coda");
+                });
 #pragma warning restore 612, 618
         }
     }

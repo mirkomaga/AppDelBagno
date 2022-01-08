@@ -1,5 +1,12 @@
 ﻿using AppDelBagno.Data;
+using AppDelBagno.Hubs;
+using AspNetCoreHero.ToastNotification;
+using AspNetCoreHero.ToastNotification.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AppDelBagno
 {
@@ -23,11 +30,18 @@ namespace AppDelBagno
             });
 
 
-            services.AddMvc(option => option.EnableEndpointRouting = false);
+            services.AddMvc(option => option.EnableEndpointRouting = true);
 
             services.AddDbContext<AppDelBagnoContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("AppDelBagnoContext")));
+
+            services.AddNotyf(config => { config.DurationInSeconds = 10; config.IsDismissable = true; config.Position = NotyfPosition.BottomRight; });
+
+            services.AddSignalR();
         }
+
+
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
@@ -46,13 +60,35 @@ namespace AppDelBagno
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-
-            app.UseMvc(routes =>
+            app.UseRouting();
+            
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+
+
+                endpoints.MapHub<ChatHub>("/chat");
+
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Bagnoes}/{action=Index}/{id?}");
+                    pattern: "{controller=Bagnoes}/{action=Index}/{id?}");
+
             });
+
+
+
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute(
+            //        name: "default",
+            //        template: "{controller=Bagnoes}/{action=Index}/{id?}");
+
+            //});
+
+
+            app.UseNotyf();
+
+
+
         }
     }
 }

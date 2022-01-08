@@ -1,14 +1,10 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using AppDelBagno.Data;
 using AppDelBagno.Models;
-using MySqlConnector;
+using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Net.WebSockets;
 
 namespace AppDelBagno.Controllers
 {
@@ -16,24 +12,105 @@ namespace AppDelBagno.Controllers
     {
         private readonly AppDelBagnoContext _context;
 
-        public BagnoesController(AppDelBagnoContext context)
+        private readonly INotyfService _notyf;
+
+        public BagnoesController(AppDelBagnoContext context, INotyfService notyf)
         {
+            _notyf = notyf;
             _context = context;
+
         }
+
+        //_notyf.Success("Bagno liberato");
 
         // GET: Bagnoes
         public async Task<IActionResult> Index()
         {
-            ViewBag.m_BagnoLibero = BagnoLibero();
+            ViewBag.bagno = is_Bloccato();
 
+            ViewBag.Coda = await _context.Coda.ToListAsync();
 
+            ViewBag.SonoInCoda = IAmInQueue();
 
             return View(await _context.Bagno.ToListAsync());
+        }
+
+        /// <summary>
+        /// Sono in coda?
+        /// </summary>
+        /// <returns></returns>
+        public bool IAmInQueue()
+        {
+            // Controllo che non sia già in coda
+            if (_context.Coda.Where(cod => Environment.UserName == cod.Utente).Count() > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Sblocco lo stato del bagno
+        /// </summary>
+        public async Task<IActionResult> UnlockBagno()
+        {
+            // Sono io
+            Bagno b = is_Bloccato();
+
+            _context.Bagno.Remove(b);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
+        public async Task<IActionResult> DeleteMeToQueue()
+        {
+            // se sono in coda
+            if (!IAmInQueue()) return NoContent();
+
+
+            // Elimino dalla coda l'utente
+            _context.Coda.RemoveRange(_context.Coda.Where(cod => Environment.UserName == cod.Utente));
+            await _context.SaveChangesAsync();
+
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        public async Task<IActionResult> AddMeToQueue()
+        {
+            // se sono in coda
+            if (IAmInQueue()) return NoContent();
+
+
+            // Aggiungo in coda
+            Coda c = new Coda();
+            c.Utente = Environment.UserName;
+            c.datetime = DateTime.Now;
+
+
+
+
+
+
+            _context.Coda.Add(c);
+            await _context.SaveChangesAsync();
+
+
+
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Bagnoes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+
+
             if (id == null)
             {
                 return NotFound();
@@ -131,8 +208,8 @@ namespace AppDelBagno.Controllers
                 return NotFound();
             }
 
-            var bagno = await _context.Bagno
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var bagno = await _context.Bagno.FirstOrDefaultAsync(m => m.Id == id);
+
             if (bagno == null)
             {
                 return NotFound();
@@ -158,9 +235,14 @@ namespace AppDelBagno.Controllers
         }
 
 
-        private bool BagnoLibero()
+        private Bagno is_Bloccato()
         {
-            return _context.Bagno.Any(e => e.Uscita == null);
+            IQueryable<Bagno> iqBloccato = _context.Bagno.Where(e => string.IsNullOrEmpty(e.Uscita.Value.ToString()));
+
+
+            if (iqBloccato.Count() == 0) return null;
+            else 
+                return iqBloccato.First();
         }
     }
 }
