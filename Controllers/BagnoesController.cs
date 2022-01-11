@@ -1,8 +1,10 @@
 ﻿#nullable disable
 using AppDelBagno.Data;
+using AppDelBagno.Hubs;
 using AppDelBagno.Models;
 using AspNetCoreHero.ToastNotification.Abstractions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Net.WebSockets;
 
@@ -10,6 +12,8 @@ namespace AppDelBagno.Controllers
 {
     public class BagnoesController : Controller
     {
+        //private readonly IHubContext<ChatHub> _hubContext;
+
         private readonly AppDelBagnoContext _context;
 
         private readonly INotyfService _notyf;
@@ -18,7 +22,6 @@ namespace AppDelBagno.Controllers
         {
             _notyf = notyf;
             _context = context;
-
         }
 
         //_notyf.Success("Bagno liberato");
@@ -31,6 +34,8 @@ namespace AppDelBagno.Controllers
             ViewBag.Coda = await _context.Coda.ToListAsync();
 
             ViewBag.SonoInCoda = IAmInQueue();
+
+            ViewBag.FirstQueue = FirstInQueue();
 
             return View(await _context.Bagno.ToListAsync());
         }
@@ -51,6 +56,18 @@ namespace AppDelBagno.Controllers
         }
 
         /// <summary>
+        /// primo in coda
+        /// </summary>
+        /// <returns></returns>
+        public Coda FirstInQueue()
+        {
+            if (_context.Coda.Count() == 0) return null;
+
+            return _context.Coda.First();
+        }
+
+
+        /// <summary>
         /// Sblocco lo stato del bagno
         /// </summary>
         public async Task<IActionResult> UnlockBagno()
@@ -58,7 +75,25 @@ namespace AppDelBagno.Controllers
             // Sono io
             Bagno b = is_Bloccato();
 
+            if (b == null) return NoContent();
+
             _context.Bagno.Remove(b);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// blocca lo stato del bagno
+        /// </summary>
+        public async Task<IActionResult> LockBagno()
+        {
+            // Sono io
+            Bagno b = new Bagno();
+            b.Entrata = DateTime.Now;
+            b.Utente = Environment.UserName;
+
+            _context.Bagno.Add(b);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));

@@ -10,6 +10,7 @@
     <PackageReference Include="AspNetCoreHero.ToastNotification" Version="1.1.0" />
     <PackageReference Include="Firebase.Auth" Version="1.0.0" />
     <PackageReference Include="FirebaseAdmin" Version="2.2.0" />
+    <PackageReference Include="jQuery.UI.Combined" Version="1.13.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR" Version="2.4.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
       <PrivateAssets>all</PrivateAssets>

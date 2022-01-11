@@ -21,12 +21,12 @@ namespace AppDelBagno.Models
                     return;   // DB has been seeded
                 }
 
-                context.Bagno.AddRange(
-                    new Bagno
-                    {
-                        Utente = "Mirko",
-                        Entrata = DateTime.Today
-                    }
+                //context.Bagno.AddRange(
+                //    new Bagno
+                //    {
+                //        Utente = "Mirko",
+                //        Entrata = DateTime.Today
+                //    }
 
                     //new Bagno
                     //{
@@ -51,8 +51,8 @@ namespace AppDelBagno.Models
                     //    Genre = "Western",
                     //    Price = 3.99M
                     //}
-                    );
-                context.SaveChanges();
+                    //);
+                //context.SaveChanges();
             }
         }
     }

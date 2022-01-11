@@ -3,10 +3,6 @@ using AppDelBagno.Hubs;
 using AspNetCoreHero.ToastNotification;
 using AspNetCoreHero.ToastNotification.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AppDelBagno
 {
@@ -67,6 +63,7 @@ namespace AppDelBagno
 
 
                 endpoints.MapHub<ChatHub>("/chat");
+
 
                 endpoints.MapControllerRoute(
                     name: "default",

@@ -7,122 +7,120 @@
 
 <h1>Gestione Bagno</h1>
 
-
-
-
-@if(ViewBag.bagno == null)
+@if (ViewBag.bagno != null && ViewBag.bagno.Utente != Environment.UserName)
 {
-    <p>
-        Puoi prenotare il bagno
-    </p>
+    <h5>Bagno occupato da: @ViewBag.bagno.Utente</h5>
 }
-else if(ViewBag.bagno.Utente == Environment.UserName)
-{
-    <p>Sei in bagno
-        <a asp-action="UnlockBagno"><button class="btn btn-success">Sblocca bagno</button></a>
-    </p>   
-}
-else
-{
-    <p>Il bagno è occupato da @ViewBag.bagno.Utente</p>
 
+@*
+ViewBag.bagno = is_Bloccato();
+ViewBag.Coda = await _context.Coda.ToListAsync();
+ViewBag.SonoInCoda = IAmInQueue();
+ViewBag.FirstQueue = FirstInQueue();
+*@
+
+@if((ViewBag.FirstQueue == null && ViewBag.bagno == null)
+|| (ViewBag.FirstQueue != null && ViewBag.bagno == null && ViewBag.FirstQueue.Username == Environment.UserName))
+{
+    <a asp-action="LockBagno"><button type="button" class="btn btn-success sendmessage" value="send">Blocca</button></a>
+}
+else if (ViewBag.bagno != null &&  ViewBag.bagno.Utente != Environment.UserName)
+{
     @if (!ViewBag.SonoInCoda)
     {
-        <p>Aggiungimi alla coda
-            <a asp-action="AddMeToQueue"><button class="btn btn-success"><i class="fa fa-plus"></i></button></a>
-        </p>   
+        <a asp-action="AddMeToQueue"><button type="button" class="btn btn-success sendmessage" value="send">Aggiungimi in coda</button></a>
     }
-    else
-    {    
-        <p>Eliminami dalla coda
-            <a asp-action="DeleteMeToQueue"><button class="btn btn-danger"><i class="fa fa-trash"></i></button></a>
-        </p>   
+    else{
+        <a asp-action="DeleteMeToQueue"><button type="button" class="btn btn-danger sendmessage" value="send">Rimuovi dalla coda</button></a>
     }
-
-
-    <p>Lista di attesa</p>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    Utente
-                </th>
-                <th>
-                    Ora prenotazione
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (Coda item in ViewBag.Coda) {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Utente)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.datetime)
-                </td>
-
-            </tr>
-            }
-        </tbody>
-    </table>
+}
+else if (ViewBag.bagno != null &&  ViewBag.bagno.Utente == Environment.UserName)
+{
+    <a asp-action="UnlockBagno"><button type="button" class="btn btn-danger sendmessage" value="send">Sblocca</button></a>
 }
 
 
 
 
-<body>
-    <div class="container">
-        <input type="text" id="message" />
-        <input type="button" id="sendmessage" value="Send" />
-        <ul id="discussion"></ul>
-    </div>
-    <!--Script references. -->
-    <!--Reference the SignalR library. -->
+
+
+
+
+<table class="table" id="QueueTable">
+    <thead>
+        <tr>
+            <th>
+                Utente
+            </th>
+            <th>
+                Ora prenotazione
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Coda item in ViewBag.Coda) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Utente)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.datetime)
+            </td>
+
+        </tr>
+        }
+    </tbody>
+</table>
+
+
+
+
+
+    
+<!--Script references. -->
+<!--Reference the SignalR library. -->
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
-    <!--Add script to update the page and send messages.-->
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            //var messageInput = document.getElementById('message');
-            // Get the user name and store it to prepend to messages.
-            //var name = prompt('Enter your name:', '');
-            // Set initial focus to message input box.
-            //messageInput.focus();
-
-            // Start the connection.
-            var connection = new signalR.HubConnectionBuilder()
-                                .withUrl('/chat')
-                                .build();
+<!--Add script to update the page and send messages.-->
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
 
 
-            // Create a function that the hub can call to broadcast messages.
-            connection.on('broadcastMessage', function (name, message) {
-                // Html encode display name and message.
-                var encodedName = name;
-                var encodedMsg = message;
-                // Add the message to the page.
-                var liElement = document.createElement('li');
-                liElement.innerHTML = '<strong>' + encodedName + '</strong>:  ' + encodedMsg;
-                document.getElementById('discussion').appendChild(liElement);
-            });
 
-            // Transport fallback functionality is now built into start.
-            connection.start()
-                .then(function () {
-                    console.log('connection started');
-                    document.getElementById('sendmessage').addEventListener('click', function (event) {
-                        // Call the Send method on the hub.
-                        connection.invoke('send', name, messageInput.value);
-                        // Clear text box and reset focus for next comment.
-                        messageInput.value = '';
-                        messageInput.focus();
-                        event.preventDefault();
-                    });
-            })
-            .catch(error => {
-                console.error(error.message);
-            });
+        // Get the user name and store it to prepend to messages.
+        var name = "malemale";
+        // Set initial focus to message input box.
+
+        // Start the connection.
+        var connection = new signalR.HubConnectionBuilder()
+                            .withUrl('/chat')
+                            .build();
+
+        // Create a function that the hub can call to broadcast messages.
+        connection.on('broadcastMessage', function (name, message) {
+
+
+            if(message == "reload")
+            {
+                location.reload();
+            }
+            
         });
-    </script>
-</body>
+
+        // Transport fallback functionality is now built into start.
+        connection.start()
+            .then(function () {
+                console.log('connection started');
+                document.getElementsByClassName('sendmessage').addEventListener('click', function (event) {
+                    // Call the Send method on the hub.
+                    connection.invoke('send', name, "reaload");
+
+                    // Clear text box and reset focus for next comment.
+                    event.preventDefault();
+                });
+        })
+        .catch(error => {
+            console.error(error.message);
+        });
+    });
+</script>

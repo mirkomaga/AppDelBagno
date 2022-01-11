@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AppDelBagno.Data;
 using AppDelBagno.Models;
+using AppDelBagno.Hubs;
 
 namespace AppDelBagno.Controllers
 {

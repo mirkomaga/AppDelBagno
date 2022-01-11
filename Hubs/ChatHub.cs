@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿
+
+using Microsoft.AspNetCore.SignalR;
 
 namespace AppDelBagno.Hubs
 {
-    public class ChatHub : Hub
+    public class ChatHub : Microsoft.AspNetCore.SignalR.Hub
     {
-        public void Send(string name, string message)
+        public async Task Send(string name, string message)
         {
-            Clients.All.SendAsync("broadcastMessage", name, message);
+            // Call the broadcastMessage method to update clients.
+            await Clients.All.SendAsync("broadcastMessage", name, message);
         }
     }
+
 }
