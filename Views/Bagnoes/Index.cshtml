@@ -22,21 +22,21 @@ ViewBag.FirstQueue = FirstInQueue();
 @if((ViewBag.FirstQueue == null && ViewBag.bagno == null)
 || (ViewBag.FirstQueue != null && ViewBag.bagno == null && ViewBag.FirstQueue.Username == Environment.UserName))
 {
-    <a asp-action="LockBagno"><button type="button" class="btn btn-success sendmessage" value="send">Blocca</button></a>
+    <a asp-action="LockBagno"><button id="LockBagno" class="btn btn-success">Blocca</button></a>
 }
 else if (ViewBag.bagno != null &&  ViewBag.bagno.Utente != Environment.UserName)
 {
     @if (!ViewBag.SonoInCoda)
     {
-        <a asp-action="AddMeToQueue"><button type="button" class="btn btn-success sendmessage" value="send">Aggiungimi in coda</button></a>
+        <a asp-action="AddMeToQueue"><button id="AddMeToQueue" class="btn btn-success">Aggiungimi in coda</button></a>
     }
     else{
-        <a asp-action="DeleteMeToQueue"><button type="button" class="btn btn-danger sendmessage" value="send">Rimuovi dalla coda</button></a>
+        <a asp-action="DeleteMeToQueue"><button id="DeleteMeToQueue" class="btn btn-danger">Rimuovi dalla coda</button></a>
     }
 }
 else if (ViewBag.bagno != null &&  ViewBag.bagno.Utente == Environment.UserName)
 {
-    <a asp-action="UnlockBagno"><button type="button" class="btn btn-danger sendmessage" value="send">Sblocca</button></a>
+    <a asp-action="UnlockBagno"><button id="UnlockBagno" class="btn btn-danger">Sblocca</button></a>
 }
 
 
@@ -80,47 +80,95 @@ else if (ViewBag.bagno != null &&  ViewBag.bagno.Utente == Environment.UserName)
     
 <!--Script references. -->
 <!--Reference the SignalR library. -->
-    <script src="~/js/signalr/dist/browser/signalr.js"></script>
-<!--Add script to update the page and send messages.-->
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function () {
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+ 
+        var name = "";
 
+        var connection = new signalR.HubConnectionBuilder().withUrl('/chat').build();
+        connection.on('broadcastMessage', function(name, message) {
+            if(message == "reload"){
+                setTimeout(
+                  function() 
+                  {
+                                location.reload();
+                  }, 500);
 
-
-        // Get the user name and store it to prepend to messages.
-        var name = "malemale";
-        // Set initial focus to message input box.
-
-        // Start the connection.
-        var connection = new signalR.HubConnectionBuilder()
-                            .withUrl('/chat')
-                            .build();
-
-        // Create a function that the hub can call to broadcast messages.
-        connection.on('broadcastMessage', function (name, message) {
-
-
-            if(message == "reload")
-            {
-                location.reload();
             }
+        });
+
+        connection.start().then(function() {
+        // Wire up Send button to call NewContosoChatMessage on the server.
+            $('#AddMeToQueue').click(function () {
+                connection.invoke('send', name, "reload");
+            });
             
+        // Wire up Send button to call NewContosoChatMessage on the server.
+            $('#DeleteMeToQueue').click(function () {
+                connection.invoke('send', name, "reload");
+            });
+        // Wire up Send button to call NewContosoChatMessage on the server.
+            $('#UnlockBagno').click(function () {
+                connection.invoke('send', name, "reload");
+            });
+        // Wire up Send button to call NewContosoChatMessage on the server.
+            $('#LockBagno').click(function () {
+                connection.invoke('send', name, "reload");
+            });
         });
 
-        // Transport fallback functionality is now built into start.
-        connection.start()
-            .then(function () {
-                console.log('connection started');
-                document.getElementsByClassName('sendmessage').addEventListener('click', function (event) {
-                    // Call the Send method on the hub.
-                    connection.invoke('send', name, "reaload");
 
-                    // Clear text box and reset focus for next comment.
-                    event.preventDefault();
-                });
-        })
-        .catch(error => {
-            console.error(error.message);
-        });
-    });
+  
+
+</script>
+
+<!--Add script to update the page and send messages.-->
+<script>
+
+
+    //document.addEventListener('DOMContentLoaded', function () {
+
+
+
+    //    // Get the user name and store it to prepend to messages.
+    //    var name = "malemale";
+    //    // Set initial focus to message input box.
+
+    //    // Start the connection.
+    //    var connection = new signalR.HubConnectionBuilder()
+    //                        .withUrl('/chat')
+    //                        .build();
+
+    //    // Create a function that the hub can call to broadcast messages.
+    //    connection.on('broadcastMessage', function (name, message) {
+
+
+    //        if(message == "reload")
+    //        {  
+    //            location.reload(true);
+    //        }
+            
+    //    });
+
+    //    // Transport fallback functionality is now built into start.
+    //    connection.start().then(function () {
+    //            console.log('connection started');
+    //            document.getElementById('LockBagno').addEventListener('click', function (event) {
+    //                connection.invoke('send', name, "reload");
+    //            });
+    //            document.getElementById('UnlockBagno').addEventListener('click', function (event) {
+    //                connection.invoke('send', name, "reload");
+    //            });
+    //            document.getElementById('DeleteMeToQueue').addEventListener('click', function (event) {
+    //                connection.invoke('send', name, "reload");
+    //            });
+    //            document.getElementById('AddMeToQueue').addEventListener('click', function (event) {
+    //                connection.invoke('send', name, "reload");
+    //            });
+    //    })
+    //    .catch(error => {
+    //        console.error(error.message);
+    //    });
+    //});
 </script>

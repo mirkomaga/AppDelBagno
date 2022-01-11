@@ -96,6 +96,7 @@ namespace AppDelBagno.Controllers
             _context.Bagno.Add(b);
             await _context.SaveChangesAsync();
 
+            //return NoContent();
             return RedirectToAction(nameof(Index));
         }
 
@@ -139,6 +140,7 @@ namespace AppDelBagno.Controllers
 
 
             return RedirectToAction(nameof(Index));
+            //return NoContent();
         }
 
         // GET: Bagnoes/Details/5
